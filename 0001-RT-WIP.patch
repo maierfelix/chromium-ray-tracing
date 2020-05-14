@@ -1,0 +1,2089 @@
+From 53ea99ec7847a2626737dfbc5c90f57a7c326d83 Mon Sep 17 00:00:00 2001
+From: Felix Maier <xilefmai@gmail.com>
+Date: Mon, 11 May 2020 12:33:24 +0200
+Subject: [PATCH] RT WIP
+
+Add missing RT extension, Roll dawn
+
+Roll dawn, add acceleration destroy, add acceleration instances, updateInstance, build/update acceleration container passes
+
+Roll Dawn
+
+Add SBT, Add GPUResource alias, add copyRayTracingAccelerationContainer, fix some stuff
+
+Add RT pipeline, RT pass encoder, fix some stuff
+
+Fix transform3D Z property, use transformMatrixSize
+
+Add transformMatrixSize default, fix defaults
+
+RT spec update WIP
+
+RT spec update WIP
+
+Update DEPS
+
+WGPUTransform3D->WGPUTransform3DDescriptor
+
+Update DEPS
+
+Roll dawn
+
+RT spec changes
+
+Roll dawn
+---
+ DEPS                                          |  10 +-
+ devenv                                        |   0
+ .../service/webgpu_decoder_impl.cc            |   4 +-
+ .../bindings/generated_in_modules.gni         |  14 ++
+ .../renderer/bindings/idl_in_modules.gni      |  21 ++
+ .../bindings/modules/v8/generated.gni         |   4 +-
+ .../bindings/scripts/bind_gen/path_manager.py |   3 +
+ .../renderer/bindings/scripts/utilities.py    |   3 +
+ .../blink/renderer/modules/webgpu/BUILD.gn    |  11 +
+ .../modules/webgpu/client_validation.cc       |   7 +
+ .../modules/webgpu/client_validation.h        |   4 +
+ .../modules/webgpu/dawn_conversions.cc        |  45 ++++
+ .../renderer/modules/webgpu/gpu_adapter.cc    |   4 +
+ .../renderer/modules/webgpu/gpu_adapter.idl   |   1 +
+ .../renderer/modules/webgpu/gpu_bind_group.cc |   6 +
+ .../modules/webgpu/gpu_bind_group_entry.idl   |   2 +-
+ .../webgpu/gpu_bind_group_layout_entry.idl    |   1 +
+ .../modules/webgpu/gpu_buffer_usage.h         |   1 +
+ .../modules/webgpu/gpu_buffer_usage.idl       |   1 +
+ .../modules/webgpu/gpu_command_encoder.cc     |  59 +++++
+ .../modules/webgpu/gpu_command_encoder.h      |  15 ++
+ .../modules/webgpu/gpu_command_encoder.idl    |  11 +
+ .../renderer/modules/webgpu/gpu_device.cc     |  16 ++
+ .../renderer/modules/webgpu/gpu_device.h      |  13 +
+ .../renderer/modules/webgpu/gpu_device.idl    |   5 +
+ .../gpu_ray_tracing_acceleration_container.cc | 224 ++++++++++++++++++
+ .../gpu_ray_tracing_acceleration_container.h  |  36 +++
+ ...gpu_ray_tracing_acceleration_container.idl |  14 ++
+ ...cing_acceleration_container_descriptor.idl |  17 ++
+ ...ray_tracing_acceleration_container_usage.h |  30 +++
+ ...y_tracing_acceleration_container_usage.idl |  16 ++
+ ..._acceleration_geometry_aabb_descriptor.idl |  12 +
+ ...acing_acceleration_geometry_descriptor.idl |  18 ++
+ ...acceleration_geometry_index_descriptor.idl |  12 +
+ ..._ray_tracing_acceleration_geometry_usage.h |  28 +++
+ ...ay_tracing_acceleration_geometry_usage.idl |  14 ++
+ ...cceleration_geometry_vertex_descriptor.idl |  13 +
+ ...acing_acceleration_instance_descriptor.idl |  16 ++
+ ...leration_instance_transform_descriptor.idl |  11 +
+ ..._ray_tracing_acceleration_instance_usage.h |  30 +++
+ ...ay_tracing_acceleration_instance_usage.idl |  16 ++
+ .../gpu_ray_tracing_pass_descriptor.idl       |   8 +
+ .../webgpu/gpu_ray_tracing_pass_encoder.cc    |  93 ++++++++
+ .../webgpu/gpu_ray_tracing_pass_encoder.h     |  57 +++++
+ .../webgpu/gpu_ray_tracing_pass_encoder.idl   |  20 ++
+ .../webgpu/gpu_ray_tracing_pipeline.cc        |  67 ++++++
+ .../modules/webgpu/gpu_ray_tracing_pipeline.h |  34 +++
+ .../webgpu/gpu_ray_tracing_pipeline.idl       |  11 +
+ .../gpu_ray_tracing_pipeline_descriptor.idl   |   9 +
+ .../gpu_ray_tracing_shader_binding_table.cc   |  79 ++++++
+ .../gpu_ray_tracing_shader_binding_table.h    |  34 +++
+ .../gpu_ray_tracing_shader_binding_table.idl  |  11 +
+ ...racing_shader_binding_table_descriptor.idl |  10 +
+ ..._shader_binding_table_group_descriptor.idl |  19 ++
+ ..._shader_binding_table_stage_descriptor.idl |  10 +
+ .../gpu_ray_tracing_state_descriptor.idl      |  11 +
+ .../modules/webgpu/gpu_shader_stage.h         |   5 +
+ .../modules/webgpu/gpu_shader_stage.idl       |   5 +
+ .../webgpu/gpu_transform_3d_descriptor.idl    |  11 +
+ .../blink/renderer/modules/webgpu/idls.gni    |  21 ++
+ 60 files changed, 1275 insertions(+), 8 deletions(-)
+ create mode 100644 devenv
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.cc
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_index_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_transform_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.cc
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.cc
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.cc
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_group_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_stage_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_state_descriptor.idl
+ create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_transform_3d_descriptor.idl
+
+diff --git a/DEPS b/DEPS
+index 02de83bf7517..398de8ef0dbf 100644
+--- a/DEPS
++++ b/DEPS
+@@ -170,6 +170,7 @@ vars = {
+   'boringssl_git': 'https://boringssl.googlesource.com',
+   'chromium_git': 'https://chromium.googlesource.com',
+   'dawn_git': 'https://dawn.googlesource.com',
++  'github_git': 'https://github.com',
+   'pdfium_git': 'https://pdfium.googlesource.com',
+   'quiche_git': 'https://quiche.googlesource.com',
+   'skia_git': 'https://skia.googlesource.com',
+@@ -293,7 +294,7 @@ vars = {
+   # Three lines of non-changing comments so that
+   # the commit queue can handle CLs rolling feed
+   # and whatever else without interference from each other.
+-  'spirv_cross_revision': '7e0295abf81cc939ecb2644c88592d77407d18d3',
++  'spirv_cross_revision': '1d629fcb2e56dd286d0291351ebc7c72d4d86ee0',
+   # Three lines of non-changing comments so that
+   # the commit queue can handle CLs rolling feed
+   # and whatever else without interference from each other.
+@@ -301,7 +302,7 @@ vars = {
+   # Three lines of non-changing comments so that
+   # the commit queue can handle CLs rolling feed
+   # and whatever else without interference from each other.
+-  'dawn_revision': '562255a94346d1121c433abfa2abe39aee135804',
++  'dawn_revision': '4d00c624611c96695a4831c96b93316625e87682',
+   # Three lines of non-changing comments so that
+   # the commit queue can handle CLs rolling feed
+   # and whatever else without interference from each other.
+@@ -356,6 +357,7 @@ allowed_hosts = [
+   'chrome-internal.googlesource.com',
+   'chromium.googlesource.com',
+   'dawn.googlesource.com',
++  'github.com',
+   'pdfium.googlesource.com',
+   'quiche.googlesource.com',
+   'skia.googlesource.com',
+@@ -613,7 +615,7 @@ deps = {
+   # the repository and dependencies include them like so:
+   #   #include "spirv-cross/spirv_glsl.hpp"
+   'src/third_party/spirv-cross/spirv-cross':
+-    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Cross.git@' +
++    Var('github_git') + '/maierfelix/SPIRV-Cross.git@' +
+         Var('spirv_cross_revision'),
+ 
+   'src/third_party/spirv-headers/src':
+@@ -766,7 +768,7 @@ deps = {
+     Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '114e8f0ee53ba34d22452dc4bdc0e9ec263189c8',
+ 
+   'src/third_party/dawn':
+-    Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
++    Var('github_git') + '/maierfelix/dawn-ray-tracing.git' + '@' +  Var('dawn_revision'),
+ 
+   'src/third_party/glfw/src':
+     Var('chromium_git') + '/external/github.com/glfw/glfw.git@' +  '2de2589f910b1a85905f425be4d32f33cec092df',
+diff --git a/devenv b/devenv
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/gpu/command_buffer/service/webgpu_decoder_impl.cc b/gpu/command_buffer/service/webgpu_decoder_impl.cc
+index a4c8530dfd81..a8f90e6ad3d3 100644
+--- a/gpu/command_buffer/service/webgpu_decoder_impl.cc
++++ b/gpu/command_buffer/service/webgpu_decoder_impl.cc
+@@ -651,6 +651,9 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
+   if (request_device_properties.textureCompressionBC) {
+     device_descriptor.requiredExtensions.push_back("texture_compression_bc");
+   }
++  if (request_device_properties.rayTracing) {
++    device_descriptor.requiredExtensions.push_back("ray_tracing");
++  }
+ 
+   WGPUDevice wgpu_device =
+       dawn_adapters_[requested_adapter_index].CreateDevice(&device_descriptor);
+@@ -662,7 +665,6 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
+       std::make_unique<DawnDeviceAndWireServer>(client(), wgpu_device,
+                                                 device_client_id,
+                                                 memory_transfer_service_.get());
+-
+   return error::kNoError;
+ }
+ 
+diff --git a/third_party/blink/renderer/bindings/generated_in_modules.gni b/third_party/blink/renderer/bindings/generated_in_modules.gni
+index 99a6057cb6ee..b06b02aa104d 100644
+--- a/third_party/blink/renderer/bindings/generated_in_modules.gni
++++ b/third_party/blink/renderer/bindings/generated_in_modules.gni
+@@ -672,6 +672,20 @@ generated_interface_sources_in_modules = [
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_layout.h",
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue.cc",
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container_usage.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container_usage.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_usage.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_usage.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_instance_usage.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_instance_usage.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pass_encoder.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pass_encoder.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pipeline.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pipeline.h",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_shader_binding_table.cc",
++  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_shader_binding_table.h",
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle.cc",
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle.h",
+   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_encoder.cc",
+diff --git a/third_party/blink/renderer/bindings/idl_in_modules.gni b/third_party/blink/renderer/bindings/idl_in_modules.gni
+index e0618d49fd06..1acb5a7f52d3 100644
+--- a/third_party/blink/renderer/bindings/idl_in_modules.gni
++++ b/third_party/blink/renderer/bindings/idl_in_modules.gni
+@@ -854,6 +854,26 @@ static_idl_files_in_modules = get_path_info(
+           "//third_party/blink/renderer/modules/webgpu/gpu_programmable_stage_descriptor.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_queue.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_rasterization_state_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_index_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_transform_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_group_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_stage_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_state_descriptor.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_render_bundle.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_render_bundle_descriptor.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.idl",
+@@ -880,6 +900,7 @@ static_idl_files_in_modules = get_path_info(
+           "//third_party/blink/renderer/modules/webgpu/gpu_texture_usage.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_texture_view.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_texture_view_descriptor.idl",
++          "//third_party/blink/renderer/modules/webgpu/gpu_transform_3d_descriptor.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event_init.idl",
+           "//third_party/blink/renderer/modules/webgpu/gpu_validation_error.idl",
+diff --git a/third_party/blink/renderer/bindings/modules/v8/generated.gni b/third_party/blink/renderer/bindings/modules/v8/generated.gni
+index d715d4d0684b..94434450d119 100644
+--- a/third_party/blink/renderer/bindings/modules/v8/generated.gni
++++ b/third_party/blink/renderer/bindings/modules/v8/generated.gni
+@@ -49,6 +49,8 @@ bindings_modules_generated_union_type_files = [
+   "$bindings_modules_v8_output_dir/double_sequence_or_gpu_color_dict.h",
+   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.cc",
+   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.h",
++  "$bindings_modules_v8_output_dir/gpu_binding_resource.cc",
++  "$bindings_modules_v8_output_dir/gpu_binding_resource.h",
+   "$bindings_modules_v8_output_dir/gpu_buffer_or_array_buffer.cc",
+   "$bindings_modules_v8_output_dir/gpu_buffer_or_array_buffer.h",
+   "$bindings_modules_v8_output_dir/gpu_load_op_or_double_sequence_or_gpu_color_dict.cc",
+@@ -59,8 +61,6 @@ bindings_modules_generated_union_type_files = [
+   "$bindings_modules_v8_output_dir/gpu_load_op_or_unsigned_long_enforce_range.h",
+   "$bindings_modules_v8_output_dir/gpu_out_of_memory_error_or_gpu_validation_error.cc",
+   "$bindings_modules_v8_output_dir/gpu_out_of_memory_error_or_gpu_validation_error.h",
+-  "$bindings_modules_v8_output_dir/gpu_sampler_or_gpu_texture_view_or_gpu_buffer_binding.cc",
+-  "$bindings_modules_v8_output_dir/gpu_sampler_or_gpu_texture_view_or_gpu_buffer_binding.h",
+   "$bindings_modules_v8_output_dir/html_canvas_element_or_offscreen_canvas.cc",
+   "$bindings_modules_v8_output_dir/html_canvas_element_or_offscreen_canvas.h",
+   "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index.cc",
+diff --git a/third_party/blink/renderer/bindings/scripts/bind_gen/path_manager.py b/third_party/blink/renderer/bindings/scripts/bind_gen/path_manager.py
+index 47d6c08b8ee0..0aeb25a585dc 100644
+--- a/third_party/blink/renderer/bindings/scripts/bind_gen/path_manager.py
++++ b/third_party/blink/renderer/bindings/scripts/bind_gen/path_manager.py
+@@ -218,4 +218,7 @@ _BACKWARD_COMPATIBLE_UNION_FILEPATHS = {
+     # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
+     "OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext":
+     "OffscreenRenderingContext",
++    # modules/webgpu/gpu_bind_group_entry.idl
++    'GPUSamplerOrGPUTextureViewOrGPUBufferBindingOrGPURayTracingAccelerationContainer':
++    'GPUBindingResource',
+ }
+diff --git a/third_party/blink/renderer/bindings/scripts/utilities.py b/third_party/blink/renderer/bindings/scripts/utilities.py
+index 1dc06544585c..b13d15841845 100644
+--- a/third_party/blink/renderer/bindings/scripts/utilities.py
++++ b/third_party/blink/renderer/bindings/scripts/utilities.py
+@@ -499,6 +499,9 @@ def shorten_union_name(union_type):
+         # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
+         'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext':
+         'OffscreenRenderingContext',
++        # modules/webgpu/gpu_bind_group_entry.idl
++        'GPUSamplerOrGPUTextureViewOrGPUBufferBindingOrGPURayTracingAccelerationContainer':
++        'GPUBindingResource'
+     }
+ 
+     idl_type = union_type
+diff --git a/third_party/blink/renderer/modules/webgpu/BUILD.gn b/third_party/blink/renderer/modules/webgpu/BUILD.gn
+index 01c03224f93f..cd6a52e9a3fe 100644
+--- a/third_party/blink/renderer/modules/webgpu/BUILD.gn
++++ b/third_party/blink/renderer/modules/webgpu/BUILD.gn
+@@ -49,6 +49,17 @@ blink_modules_sources("webgpu") {
+     "gpu_programmable_pass_encoder.h",
+     "gpu_queue.cc",
+     "gpu_queue.h",
++    "gpu_ray_tracing_acceleration_container.cc",
++    "gpu_ray_tracing_acceleration_container.h",
++    "gpu_ray_tracing_acceleration_container_usage.h",
++    "gpu_ray_tracing_acceleration_geometry_usage.h",
++    "gpu_ray_tracing_acceleration_instance_usage.h",
++    "gpu_ray_tracing_pass_encoder.cc",
++    "gpu_ray_tracing_pass_encoder.h",
++    "gpu_ray_tracing_pipeline.cc",
++    "gpu_ray_tracing_pipeline.h",
++    "gpu_ray_tracing_shader_binding_table.cc",
++    "gpu_ray_tracing_shader_binding_table.h",
+     "gpu_render_bundle.cc",
+     "gpu_render_bundle.h",
+     "gpu_render_bundle_encoder.cc",
+diff --git a/third_party/blink/renderer/modules/webgpu/client_validation.cc b/third_party/blink/renderer/modules/webgpu/client_validation.cc
+index 6a8ffb2fe1a4..312cc9c8e231 100644
+--- a/third_party/blink/renderer/modules/webgpu/client_validation.cc
++++ b/third_party/blink/renderer/modules/webgpu/client_validation.cc
+@@ -10,6 +10,7 @@
+ #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_2d_dict.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container.h"
+ #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+ 
+ namespace blink {
+@@ -40,4 +41,10 @@ bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
+   return true;
+ }
+ 
++bool ValidateRayTracingAccelerationContainer(GPURayTracingAccelerationContainer* container,
++                             ExceptionState& exception_state) {
++  DCHECK(container);
++  return true;
++}
++
+ }  // namespace blink
+diff --git a/third_party/blink/renderer/modules/webgpu/client_validation.h b/third_party/blink/renderer/modules/webgpu/client_validation.h
+index 47179e4b2a18..f16d63cd2fc2 100644
+--- a/third_party/blink/renderer/modules/webgpu/client_validation.h
++++ b/third_party/blink/renderer/modules/webgpu/client_validation.h
+@@ -13,6 +13,7 @@ namespace blink {
+ 
+ class ExceptionState;
+ class GPUTextureCopyView;
++class GPURayTracingAccelerationContainer;
+ class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
+ 
+ bool ValidateCopySize(
+@@ -20,6 +21,9 @@ bool ValidateCopySize(
+     ExceptionState& exception_state);
+ bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
+                              ExceptionState& exception_state);
++bool ValidateRayTracingAccelerationContainer(
++    GPURayTracingAccelerationContainer* container,
++    ExceptionState& exception_state);
+ }  // namespace blink
+ 
+ #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_CLIENT_VALIDATION_H_
+diff --git a/third_party/blink/renderer/modules/webgpu/dawn_conversions.cc b/third_party/blink/renderer/modules/webgpu/dawn_conversions.cc
+index a668a87edc7d..3f8314bd5737 100644
+--- a/third_party/blink/renderer/modules/webgpu/dawn_conversions.cc
++++ b/third_party/blink/renderer/modules/webgpu/dawn_conversions.cc
+@@ -43,6 +43,9 @@ WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
+   if (webgpu_enum == "writeonly-storage-texture") {
+     return WGPUBindingType_WriteonlyStorageTexture;
+   }
++  if (webgpu_enum == "acceleration-container") {
++    return WGPUBindingType_AccelerationContainer;
++  }
+   NOTREACHED();
+   return WGPUBindingType_Force32;
+ }
+@@ -370,6 +373,9 @@ WGPUIndexFormat AsDawnEnum<WGPUIndexFormat>(const WTF::String& webgpu_enum) {
+   if (webgpu_enum == "uint32") {
+     return WGPUIndexFormat_Uint32;
+   }
++  if (webgpu_enum == "none") {
++    return WGPUIndexFormat_None;
++  }
+   NOTREACHED();
+   return WGPUIndexFormat_Force32;
+ }
+@@ -657,6 +663,45 @@ WGPUErrorFilter AsDawnEnum<WGPUErrorFilter>(const WTF::String& webgpu_enum) {
+   return WGPUErrorFilter_Force32;
+ }
+ 
++template <>
++WGPURayTracingAccelerationContainerLevel AsDawnEnum<WGPURayTracingAccelerationContainerLevel>(const WTF::String& webgpu_enum) {
++  if (webgpu_enum == "bottom") {
++    return WGPURayTracingAccelerationContainerLevel_Bottom;
++  }
++  if (webgpu_enum == "top") {
++    return WGPURayTracingAccelerationContainerLevel_Top;
++  }
++  NOTREACHED();
++  return WGPURayTracingAccelerationContainerLevel_Force32;
++}
++
++template <>
++WGPURayTracingAccelerationGeometryType AsDawnEnum<WGPURayTracingAccelerationGeometryType>(const WTF::String& webgpu_enum) {
++  if (webgpu_enum == "triangles") {
++    return WGPURayTracingAccelerationGeometryType_Triangles;
++  }
++  if (webgpu_enum == "aabbs") {
++    return WGPURayTracingAccelerationGeometryType_Aabbs;
++  }
++  NOTREACHED();
++  return WGPURayTracingAccelerationGeometryType_Force32;
++}
++
++template <>
++WGPURayTracingShaderBindingTableGroupType AsDawnEnum<WGPURayTracingShaderBindingTableGroupType>(const WTF::String& webgpu_enum) {
++  if (webgpu_enum == "general") {
++    return WGPURayTracingShaderBindingTableGroupType_General;
++  }
++  if (webgpu_enum == "triangles-hit-group") {
++    return WGPURayTracingShaderBindingTableGroupType_TrianglesHitGroup;
++  }
++  if (webgpu_enum == "procedural-hit-group") {
++    return WGPURayTracingShaderBindingTableGroupType_ProceduralHitGroup;
++  }
++  NOTREACHED();
++  return WGPURayTracingShaderBindingTableGroupType_Force32;
++}
++
+ WGPUColor AsDawnColor(const Vector<double>& webgpu_color) {
+   DCHECK_EQ(webgpu_color.size(), 4UL);
+ 
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_adapter.cc b/third_party/blink/renderer/modules/webgpu/gpu_adapter.cc
+index 16697b5c677e..d904c71d376a 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_adapter.cc
++++ b/third_party/blink/renderer/modules/webgpu/gpu_adapter.cc
+@@ -27,6 +27,7 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
+   // subset of the adapter's extension set.
+   requested_device_properties.textureCompressionBC =
+       extension_set.Contains("textureCompressionBC");
++  requested_device_properties.rayTracing = extension_set.Contains("rayTracing");
+ 
+   return requested_device_properties;
+ }
+@@ -74,6 +75,9 @@ void GPUAdapter::InitializeExtensionNameList() {
+   if (adapter_properties_.textureCompressionBC) {
+     extension_name_list_.emplace_back("textureCompressionBC");
+   }
++  if (adapter_properties_.rayTracing) {
++    extension_name_list_.emplace_back("rayTracing");
++  }
+ }
+ 
+ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_adapter.idl b/third_party/blink/renderer/modules/webgpu/gpu_adapter.idl
+index 735742c66bba..22e7f92e6887 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_adapter.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_adapter.idl
+@@ -6,6 +6,7 @@
+ 
+ enum GPUExtensionName {
+     "textureCompressionBC",
++    "rayTracing",
+ };
+ 
+ [
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_bind_group.cc b/third_party/blink/renderer/modules/webgpu/gpu_bind_group.cc
+index 4933688c357b..c1765b3b7629 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_bind_group.cc
++++ b/third_party/blink/renderer/modules/webgpu/gpu_bind_group.cc
+@@ -10,6 +10,7 @@
+ #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
+ #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+@@ -37,6 +38,11 @@ WGPUBindGroupEntry AsDawnType(const GPUBindGroupEntry* webgpu_binding) {
+         webgpu_binding->resource().GetAsGPUTextureView();
+     dawn_binding.textureView = AsDawnType(texture_view);
+ 
++  } else if (webgpu_binding->resource().IsGPURayTracingAccelerationContainer()) {
++    GPURayTracingAccelerationContainer* acceleration_container =
++        webgpu_binding->resource().GetAsGPURayTracingAccelerationContainer();
++    dawn_binding.accelerationContainer = AsDawnType(acceleration_container);
++
+   } else {
+     NOTREACHED();
+   }
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_bind_group_entry.idl b/third_party/blink/renderer/modules/webgpu/gpu_bind_group_entry.idl
+index c71a9ff2aece..820f0e995913 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_bind_group_entry.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_bind_group_entry.idl
+@@ -4,7 +4,7 @@
+ 
+ // https://gpuweb.github.io/gpuweb/
+ 
+-typedef (GPUSampler or GPUTextureView or GPUBufferBinding) GPUBindingResource;
++typedef (GPUSampler or GPUTextureView or GPUBufferBinding or GPURayTracingAccelerationContainer) GPUBindingResource;
+ 
+ dictionary GPUBindGroupEntry {
+     required GPUIndex32 binding;
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout_entry.idl b/third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout_entry.idl
+index a4084166bb0c..c544faba9bde 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout_entry.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout_entry.idl
+@@ -26,6 +26,7 @@ enum GPUBindingType {
+     "sampled-texture",
+     "readonly-storage-texture",
+     "writeonly-storage-texture",
++    "acceleration-container"
+ };
+ 
+ enum GPUTextureComponentType {
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.h b/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.h
+index 5c922e7e4133..e40aef98a10f 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.h
++++ b/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.h
+@@ -23,6 +23,7 @@ class GPUBufferUsage : public ScriptWrappable {
+   static constexpr uint32_t kUniform = 64;
+   static constexpr uint32_t kStorage = 128;
+   static constexpr uint32_t kIndirect = 256;
++  static constexpr uint32_t kRayTracing = 512;
+ 
+  private:
+   DISALLOW_COPY_AND_ASSIGN(GPUBufferUsage);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.idl b/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.idl
+index 061bfa159510..9c50ca249d9a 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_buffer_usage.idl
+@@ -17,4 +17,5 @@ typedef [EnforceRange] unsigned long GPUBufferUsageFlags;
+     const unsigned long UNIFORM = 64;
+     const unsigned long STORAGE = 128;
+     const unsigned long INDIRECT = 256;
++    const unsigned long RAY_TRACING = 512;
+ };
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.cc b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.cc
+index 6969bc8f4ec9..a938bbd8ccee 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.cc
++++ b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.cc
+@@ -11,6 +11,7 @@
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_buffer_descriptor.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_encoder_descriptor.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pass_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pass_descriptor.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_color_attachment_descriptor.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_depth_stencil_attachment_descriptor.h"
+ #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_descriptor.h"
+@@ -21,6 +22,8 @@
+ #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
+@@ -255,6 +258,18 @@ GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
+       GetProcs().commandEncoderBeginComputePass(GetHandle(), &dawn_desc));
+ }
+ 
++GPURayTracingPassEncoder* GPUCommandEncoder::beginRayTracingPass(
++    const GPURayTracingPassDescriptor* descriptor) {
++  WGPURayTracingPassDescriptor dawn_desc = {};
++  if (descriptor->hasLabel()) {
++    dawn_desc.label = descriptor->label().Utf8().data();
++  }
++
++  return MakeGarbageCollected<GPURayTracingPassEncoder>(
++      device_,
++      GetProcs().commandEncoderBeginRayTracingPass(GetHandle(), &dawn_desc));
++}
++
+ void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
+                                            uint64_t src_offset,
+                                            GPUBuffer* dst,
+@@ -330,6 +345,50 @@ void GPUCommandEncoder::copyTextureToTexture(
+       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
+ }
+ 
++void GPUCommandEncoder::buildRayTracingAccelerationContainer(
++    GPURayTracingAccelerationContainer* container,
++    ExceptionState& exception_state) {
++  if (!ValidateRayTracingAccelerationContainer(container, exception_state)) {
++    return;
++  }
++
++  WGPURayTracingAccelerationContainer dawn_container = AsDawnType(container);
++
++  GetProcs().commandEncoderBuildRayTracingAccelerationContainer(
++      GetHandle(), dawn_container);
++}
++
++void GPUCommandEncoder::updateRayTracingAccelerationContainer(
++    GPURayTracingAccelerationContainer* container,
++    ExceptionState& exception_state) {
++  if (!ValidateRayTracingAccelerationContainer(container, exception_state)) {
++    return;
++  }
++
++  WGPURayTracingAccelerationContainer dawn_container = AsDawnType(container);
++
++  GetProcs().commandEncoderUpdateRayTracingAccelerationContainer(
++      GetHandle(), dawn_container);
++}
++
++void GPUCommandEncoder::copyRayTracingAccelerationContainer(
++    GPURayTracingAccelerationContainer* src_container,
++    GPURayTracingAccelerationContainer* dst_container,
++    ExceptionState& exception_state) {
++  if (!ValidateRayTracingAccelerationContainer(src_container, exception_state)) {
++    return;
++  }
++  if (!ValidateRayTracingAccelerationContainer(dst_container, exception_state)) {
++    return;
++  }
++
++  WGPURayTracingAccelerationContainer dawn_src_container = AsDawnType(src_container);
++  WGPURayTracingAccelerationContainer dawn_dst_container = AsDawnType(dst_container);
++
++  GetProcs().commandEncoderCopyRayTracingAccelerationContainer(
++      GetHandle(), dawn_src_container, dawn_dst_container);
++}
++
+ void GPUCommandEncoder::pushDebugGroup(String groupLabel) {
+   GetProcs().commandEncoderPushDebugGroup(GetHandle(),
+                                           groupLabel.Utf8().data());
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h
+index 04b36eba8501..164e05260150 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h
++++ b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h
+@@ -18,6 +18,9 @@ class GPUCommandBufferDescriptor;
+ class GPUCommandEncoderDescriptor;
+ class GPUComputePassDescriptor;
+ class GPUComputePassEncoder;
++class GPURayTracingAccelerationContainer;
++class GPURayTracingPassDescriptor;
++class GPURayTracingPassEncoder;
+ class GPURenderPassDescriptor;
+ class GPURenderPassEncoder;
+ class GPUTextureCopyView;
+@@ -40,6 +43,8 @@ class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
+       ExceptionState& exception_state);
+   GPUComputePassEncoder* beginComputePass(
+       const GPUComputePassDescriptor* descriptor);
++  GPURayTracingPassEncoder* beginRayTracingPass(
++      const GPURayTracingPassDescriptor* descriptor);
+   void copyBufferToBuffer(GPUBuffer* src,
+                           uint64_t src_offset,
+                           GPUBuffer* dst,
+@@ -60,6 +65,16 @@ class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
+       GPUTextureCopyView* destination,
+       UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
+       ExceptionState& exception_state);
++  void buildRayTracingAccelerationContainer(
++      GPURayTracingAccelerationContainer* container,
++      ExceptionState& exception_state);
++  void updateRayTracingAccelerationContainer(
++      GPURayTracingAccelerationContainer* container,
++      ExceptionState& exception_state);
++  void copyRayTracingAccelerationContainer(
++      GPURayTracingAccelerationContainer* src_container,
++      GPURayTracingAccelerationContainer* dst_container,
++      ExceptionState& exception_state);
+   void pushDebugGroup(String groupLabel);
+   void popDebugGroup();
+   void insertDebugMarker(String markerLabel);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.idl b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.idl
+index 3e9897a5e81a..b0ff59a04897 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_command_encoder.idl
+@@ -9,6 +9,7 @@
+ ] interface GPUCommandEncoder {
+     [RaisesException] GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
+     GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor = {});
++    GPURayTracingPassEncoder beginRayTracingPass(optional GPURayTracingPassDescriptor descriptor = {});
+ 
+     void copyBufferToBuffer(
+         GPUBuffer src,
+@@ -32,6 +33,16 @@
+         GPUTextureCopyView destination,
+         GPUExtent3D copySize);
+ 
++    [RaisesException] void buildRayTracingAccelerationContainer(
++        GPURayTracingAccelerationContainer container);
++
++    [RaisesException] void updateRayTracingAccelerationContainer(
++        GPURayTracingAccelerationContainer container);
++
++    [RaisesException] void copyRayTracingAccelerationContainer(
++        GPURayTracingAccelerationContainer src_container,
++        GPURayTracingAccelerationContainer dst_container);
++
+     void pushDebugGroup(DOMString groupLabel);
+     void popDebugGroup();
+     void insertDebugMarker(DOMString markerLabel);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_device.cc b/third_party/blink/renderer/modules/webgpu/gpu_device.cc
+index f8f37f782489..c71dd8458c44 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_device.cc
++++ b/third_party/blink/renderer/modules/webgpu/gpu_device.cc
+@@ -22,6 +22,9 @@
+ #include "third_party/blink/renderer/modules/webgpu/gpu_device_lost_info.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
+ #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
+@@ -155,6 +158,14 @@ GPUSampler* GPUDevice::createSampler(const GPUSamplerDescriptor* descriptor) {
+   return GPUSampler::Create(this, descriptor);
+ }
+ 
++GPURayTracingAccelerationContainer* GPUDevice::createRayTracingAccelerationContainer(const GPURayTracingAccelerationContainerDescriptor* descriptor) {
++  return GPURayTracingAccelerationContainer::Create(this, descriptor);
++}
++
++GPURayTracingShaderBindingTable* GPUDevice::createRayTracingShaderBindingTable(const GPURayTracingShaderBindingTableDescriptor* descriptor) {
++  return GPURayTracingShaderBindingTable::Create(this, descriptor);
++}
++
+ GPUBindGroup* GPUDevice::createBindGroup(
+     const GPUBindGroupDescriptor* descriptor,
+     ExceptionState& exception_state) {
+@@ -189,6 +200,11 @@ GPUComputePipeline* GPUDevice::createComputePipeline(
+   return GPUComputePipeline::Create(this, descriptor);
+ }
+ 
++GPURayTracingPipeline* GPUDevice::createRayTracingPipeline(
++    const GPURayTracingPipelineDescriptor* descriptor) {
++  return GPURayTracingPipeline::Create(this, descriptor);
++}
++
+ GPUCommandEncoder* GPUDevice::createCommandEncoder(
+     const GPUCommandEncoderDescriptor* descriptor) {
+   return GPUCommandEncoder::Create(this, descriptor);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_device.h b/third_party/blink/renderer/modules/webgpu/gpu_device.h
+index e27314bfa106..ce4fbd132c79 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_device.h
++++ b/third_party/blink/renderer/modules/webgpu/gpu_device.h
+@@ -34,6 +34,12 @@ class GPUDeviceLostInfo;
+ class GPUPipelineLayout;
+ class GPUPipelineLayoutDescriptor;
+ class GPUQueue;
++class GPURayTracingAccelerationContainer;
++class GPURayTracingAccelerationContainerDescriptor;
++class GPURayTracingShaderBindingTable;
++class GPURayTracingShaderBindingTableDescriptor;
++class GPURayTracingPipeline;
++class GPURayTracingPipelineDescriptor;
+ class GPURenderBundleEncoder;
+ class GPURenderBundleEncoderDescriptor;
+ class GPURenderPipeline;
+@@ -79,6 +85,11 @@ class GPUDevice final : public EventTargetWithInlineData,
+                             ExceptionState& exception_state);
+   GPUSampler* createSampler(const GPUSamplerDescriptor* descriptor);
+ 
++  GPURayTracingAccelerationContainer* createRayTracingAccelerationContainer(
++      const GPURayTracingAccelerationContainerDescriptor* descriptor);
++  GPURayTracingShaderBindingTable* createRayTracingShaderBindingTable(
++      const GPURayTracingShaderBindingTableDescriptor* descriptor);
++
+   GPUBindGroup* createBindGroup(const GPUBindGroupDescriptor* descriptor,
+                                 ExceptionState& exception_state);
+   GPUBindGroupLayout* createBindGroupLayout(
+@@ -95,6 +106,8 @@ class GPUDevice final : public EventTargetWithInlineData,
+       const GPURenderPipelineDescriptor* descriptor);
+   GPUComputePipeline* createComputePipeline(
+       const GPUComputePipelineDescriptor* descriptor);
++  GPURayTracingPipeline* createRayTracingPipeline(
++      const GPURayTracingPipelineDescriptor* descriptor);
+ 
+   GPUCommandEncoder* createCommandEncoder(
+       const GPUCommandEncoderDescriptor* descriptor);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_device.idl b/third_party/blink/renderer/modules/webgpu/gpu_device.idl
+index 1f694b8ef81a..a32e560b9b5f 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_device.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_device.idl
+@@ -17,6 +17,9 @@
+     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
+     GPUSampler createSampler(optional GPUSamplerDescriptor descriptor = {});
+ 
++    GPURayTracingAccelerationContainer createRayTracingAccelerationContainer(GPURayTracingAccelerationContainerDescriptor descriptor);
++    GPURayTracingShaderBindingTable createRayTracingShaderBindingTable(GPURayTracingShaderBindingTableDescriptor descriptor);
++
+     [RaisesException] GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);
+     [RaisesException] GPUBindGroupLayout createBindGroupLayout(GPUBindGroupLayoutDescriptor descriptor);
+     GPUPipelineLayout createPipelineLayout(GPUPipelineLayoutDescriptor descriptor);
+@@ -25,6 +28,8 @@
+     [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
+     GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
+ 
++    GPURayTracingPipeline createRayTracingPipeline(GPURayTracingPipelineDescriptor descriptor);
++
+     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
+     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
+ 
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.cc b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.cc
+new file mode 100644
+index 000000000000..250a57d1a4d0
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.cc
+@@ -0,0 +1,224 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h"
++
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_container_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_instance_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_vertex_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_index_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_geometry_aabb_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_acceleration_instance_transform_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_transform_3d_descriptor.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
++#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++
++namespace blink {
++
++  namespace {
++
++  }  // anonymous namespace
++
++  // static
++  GPURayTracingAccelerationContainer* GPURayTracingAccelerationContainer::Create(GPUDevice* device,
++                              const GPURayTracingAccelerationContainerDescriptor* webgpu_desc) {
++    DCHECK(device);
++    DCHECK(webgpu_desc);
++
++    WGPURayTracingAccelerationContainerDescriptor dawn_desc = {};
++    dawn_desc.usage = static_cast<WGPURayTracingAccelerationContainerUsageFlags>(webgpu_desc->usage());
++    if (webgpu_desc->hasLevel())
++      dawn_desc.level = AsDawnEnum<WGPURayTracingAccelerationContainerLevel>(webgpu_desc->level());
++    else
++      dawn_desc.level = WGPURayTracingAccelerationContainerLevel_Force32;
++    
++    uint32_t geometry_count = webgpu_desc->hasGeometries() ? static_cast<uint32_t>(webgpu_desc->geometries().size()) : 0;
++    std::unique_ptr<WGPURayTracingAccelerationGeometryVertexDescriptor[]> vertex_entries(new WGPURayTracingAccelerationGeometryVertexDescriptor[geometry_count]());
++    std::unique_ptr<WGPURayTracingAccelerationGeometryIndexDescriptor[]> index_entries(new WGPURayTracingAccelerationGeometryIndexDescriptor[geometry_count]());
++    std::unique_ptr<WGPURayTracingAccelerationGeometryAabbDescriptor[]> aabb_entries(new WGPURayTracingAccelerationGeometryAabbDescriptor[geometry_count]());
++
++    std::unique_ptr<WGPURayTracingAccelerationGeometryDescriptor[]> geometries(new WGPURayTracingAccelerationGeometryDescriptor[geometry_count]());
++    for (wtf_size_t i = 0; i < geometry_count; ++i) {
++      const GPURayTracingAccelerationGeometryDescriptor* geometry_desc = webgpu_desc->geometries()[i].Get();
++
++      WGPURayTracingAccelerationGeometryDescriptor entry_desc = {};
++      // usage
++      if (geometry_desc->hasUsage())
++        entry_desc.usage = static_cast<WGPURayTracingAccelerationGeometryUsageFlags>(geometry_desc->usage());
++      else
++        entry_desc.usage = WGPURayTracingAccelerationGeometryUsage_None;
++      // type
++      if (geometry_desc->hasType())
++        entry_desc.type = AsDawnEnum<WGPURayTracingAccelerationGeometryType>(geometry_desc->type());
++      else
++        entry_desc.type = WGPURayTracingAccelerationGeometryType_Force32;
++
++      if (geometry_desc->hasVertex()) {
++        if (geometry_desc->vertex()->hasBuffer()) {
++          vertex_entries[i].buffer = AsDawnType(geometry_desc->vertex()->buffer());
++        }
++        vertex_entries[i].format = AsDawnEnum<WGPUVertexFormat>(geometry_desc->vertex()->format());
++        vertex_entries[i].stride = geometry_desc->vertex()->stride();
++        vertex_entries[i].offset = geometry_desc->vertex()->hasOffset() ? geometry_desc->vertex()->offset() : 0;
++        vertex_entries[i].count = geometry_desc->vertex()->count();
++        entry_desc.vertex = &vertex_entries[i];
++      }
++
++      if (geometry_desc->hasIndex()) {
++        if (geometry_desc->index()->hasBuffer()) {
++          index_entries[i].buffer = AsDawnType(geometry_desc->index()->buffer());
++        }
++        index_entries[i].format = AsDawnEnum<WGPUIndexFormat>(geometry_desc->index()->format());
++        index_entries[i].offset = geometry_desc->index()->hasOffset() ? geometry_desc->index()->offset() : 0;
++        index_entries[i].count = geometry_desc->index()->count();
++        entry_desc.index = &index_entries[i];
++      }
++
++      if (geometry_desc->hasAabb()) {
++        if (geometry_desc->aabb()->hasBuffer()) {
++          aabb_entries[i].buffer = AsDawnType(geometry_desc->aabb()->buffer());
++        }
++        aabb_entries[i].stride = geometry_desc->aabb()->stride();
++        aabb_entries[i].offset = geometry_desc->aabb()->hasOffset() ? geometry_desc->aabb()->offset() : 0;
++        aabb_entries[i].count = geometry_desc->aabb()->count();
++        entry_desc.aabb = &aabb_entries[i];
++      }
++
++      geometries[i] = entry_desc;
++    }
++    dawn_desc.geometryCount = geometry_count;
++    dawn_desc.geometries = geometry_count > 0 ? geometries.get() : nullptr;
++
++    uint32_t instance_count = webgpu_desc->hasInstances() ? static_cast<uint32_t>(webgpu_desc->instances().size()) : 0;
++    std::unique_ptr<WGPUTransform3DDescriptor[]> translation_entries(new WGPUTransform3DDescriptor[instance_count]());
++    std::unique_ptr<WGPUTransform3DDescriptor[]> rotation_entries(new WGPUTransform3DDescriptor[instance_count]());
++    std::unique_ptr<WGPUTransform3DDescriptor[]> scale_entries(new WGPUTransform3DDescriptor[instance_count]());
++    std::unique_ptr<WGPURayTracingAccelerationInstanceTransformDescriptor[]> transform_entries(new WGPURayTracingAccelerationInstanceTransformDescriptor[instance_count]());
++
++    std::unique_ptr<WGPURayTracingAccelerationInstanceDescriptor[]> instances(new WGPURayTracingAccelerationInstanceDescriptor[instance_count]());
++    for (wtf_size_t i = 0; i < instance_count; ++i) {
++      const GPURayTracingAccelerationInstanceDescriptor* instance_desc = webgpu_desc->instances()[i].Get();
++
++      WGPURayTracingAccelerationInstanceDescriptor entry_desc = {};
++      // usage
++      if (instance_desc->hasUsage())
++        entry_desc.usage = static_cast<WGPURayTracingAccelerationInstanceUsageFlags>(instance_desc->usage());
++      // mask
++      if (instance_desc->hasMask())
++        entry_desc.mask = instance_desc->mask();
++      // instanceId
++      if (instance_desc->hasInstanceId())
++        entry_desc.instanceId = instance_desc->instanceId();
++      // instanceOffset
++      if (instance_desc->hasInstanceOffset())
++        entry_desc.instanceOffset = instance_desc->instanceOffset();
++      // transform
++      if (instance_desc->hasTransform()) {
++        if (instance_desc->transform()->hasTranslation()) {
++          translation_entries[i].x = instance_desc->transform()->translation()->hasX() ? instance_desc->transform()->translation()->x() : 0;
++          translation_entries[i].y = instance_desc->transform()->translation()->hasY() ? instance_desc->transform()->translation()->y() : 0;
++          translation_entries[i].z = instance_desc->transform()->translation()->hasZ() ? instance_desc->transform()->translation()->z() : 0;
++        }
++        if (instance_desc->transform()->hasRotation()) {
++          rotation_entries[i].x = instance_desc->transform()->rotation()->hasX() ? instance_desc->transform()->rotation()->x() : 0;
++          rotation_entries[i].y = instance_desc->transform()->rotation()->hasY() ? instance_desc->transform()->rotation()->y() : 0;
++          rotation_entries[i].z = instance_desc->transform()->rotation()->hasZ() ? instance_desc->transform()->rotation()->z() : 0;
++        }
++        if (instance_desc->transform()->hasScale()) {
++          scale_entries[i].x = instance_desc->transform()->scale()->hasX() ? instance_desc->transform()->scale()->x() : 0;
++          scale_entries[i].y = instance_desc->transform()->scale()->hasY() ? instance_desc->transform()->scale()->y() : 0;
++          scale_entries[i].z = instance_desc->transform()->scale()->hasZ() ? instance_desc->transform()->scale()->z() : 0;
++        }
++        transform_entries[i].translation = &translation_entries[i];
++        transform_entries[i].rotation = &rotation_entries[i];
++        transform_entries[i].scale = &scale_entries[i];
++        entry_desc.transform = &transform_entries[i];
++      }
++      // transform matrix
++      entry_desc.transformMatrix = instance_desc->hasTransformMatrix() ? instance_desc->transformMatrix()->Data() : nullptr;
++      if (instance_desc->hasTransformMatrixSize())
++        entry_desc.transformMatrixSize = instance_desc->transformMatrixSize();
++      // geometry container
++      entry_desc.geometryContainer = AsDawnType(instance_desc->geometryContainer());
++
++      instances[i] = entry_desc;
++    }
++    dawn_desc.instanceCount = instance_count;
++    dawn_desc.instances = instance_count > 0 ? instances.get() : nullptr;
++
++    return MakeGarbageCollected<GPURayTracingAccelerationContainer>(
++        device,
++        device->GetProcs().deviceCreateRayTracingAccelerationContainer(device->GetHandle(), &dawn_desc));
++  }
++
++  GPURayTracingAccelerationContainer::GPURayTracingAccelerationContainer(GPUDevice* device, WGPURayTracingAccelerationContainer acceleration_container)
++      : DawnObject<WGPURayTracingAccelerationContainer>(device, acceleration_container) {}
++
++  GPURayTracingAccelerationContainer::~GPURayTracingAccelerationContainer() {
++    if (IsDawnControlClientDestroyed()) {
++      return;
++    }
++    GetProcs().rayTracingAccelerationContainerRelease(GetHandle());
++  }
++
++  void GPURayTracingAccelerationContainer::updateInstance(
++    uint32_t instance_index, const GPURayTracingAccelerationInstanceDescriptor* webgpu_desc) {
++
++    std::unique_ptr<WGPUTransform3DDescriptor[]> translation_entries(new WGPUTransform3DDescriptor[1]());
++    std::unique_ptr<WGPUTransform3DDescriptor[]> rotation_entries(new WGPUTransform3DDescriptor[1]());
++    std::unique_ptr<WGPUTransform3DDescriptor[]> scale_entries(new WGPUTransform3DDescriptor[1]());
++    std::unique_ptr<WGPURayTracingAccelerationInstanceTransformDescriptor[]> transform_entries(new WGPURayTracingAccelerationInstanceTransformDescriptor[1]());
++
++    WGPURayTracingAccelerationInstanceDescriptor dawn_desc = {};
++    // usage
++    if (webgpu_desc->hasUsage())
++      dawn_desc.usage = static_cast<WGPURayTracingAccelerationInstanceUsageFlags>(webgpu_desc->usage());
++    // mask
++    if (webgpu_desc->hasMask())
++      dawn_desc.mask = webgpu_desc->mask();
++    // instanceId
++    if (webgpu_desc->hasInstanceId())
++      dawn_desc.instanceId = webgpu_desc->instanceId();
++    // instanceOffset
++    if (webgpu_desc->hasInstanceOffset())
++      dawn_desc.instanceOffset = webgpu_desc->instanceOffset();
++    // transform
++    if (webgpu_desc->hasTransform()) {
++      if (webgpu_desc->transform()->hasTranslation()) {
++        translation_entries[0].x = webgpu_desc->transform()->translation()->hasX() ? webgpu_desc->transform()->translation()->x() : 0;
++        translation_entries[0].y = webgpu_desc->transform()->translation()->hasY() ? webgpu_desc->transform()->translation()->y() : 0;
++        translation_entries[0].z = webgpu_desc->transform()->translation()->hasZ() ? webgpu_desc->transform()->translation()->z() : 0;
++      }
++      if (webgpu_desc->transform()->hasRotation()) {
++        rotation_entries[0].x = webgpu_desc->transform()->rotation()->hasX() ? webgpu_desc->transform()->rotation()->x() : 0;
++        rotation_entries[0].y = webgpu_desc->transform()->rotation()->hasY() ? webgpu_desc->transform()->rotation()->y() : 0;
++        rotation_entries[0].z = webgpu_desc->transform()->rotation()->hasZ() ? webgpu_desc->transform()->rotation()->z() : 0;
++      }
++      if (webgpu_desc->transform()->hasScale()) {
++        scale_entries[0].x = webgpu_desc->transform()->scale()->hasX() ? webgpu_desc->transform()->scale()->x() : 0;
++        scale_entries[0].y = webgpu_desc->transform()->scale()->hasY() ? webgpu_desc->transform()->scale()->y() : 0;
++        scale_entries[0].z = webgpu_desc->transform()->scale()->hasZ() ? webgpu_desc->transform()->scale()->z() : 0;
++      }
++      transform_entries[0].translation = &translation_entries[0];
++      transform_entries[0].rotation = &rotation_entries[0];
++      transform_entries[0].scale = &scale_entries[0];
++      dawn_desc.transform = &transform_entries[0];
++    }
++    // transform matrix
++    dawn_desc.transformMatrix = webgpu_desc->hasTransformMatrix() ? webgpu_desc->transformMatrix()->Data() : nullptr;
++    if (webgpu_desc->hasTransformMatrixSize())
++      dawn_desc.transformMatrixSize = webgpu_desc->transformMatrixSize();
++    // geometry container
++    dawn_desc.geometryContainer = AsDawnType(webgpu_desc->geometryContainer());
++
++    GetProcs().rayTracingAccelerationContainerUpdateInstance(GetHandle(), instance_index, &dawn_desc);
++  }
++
++  void GPURayTracingAccelerationContainer::destroy() {
++    GetProcs().rayTracingAccelerationContainerDestroy(GetHandle());
++  }
++
++}  // namespace blink
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h
+new file mode 100644
+index 000000000000..4ff91f85afbc
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h
+@@ -0,0 +1,36 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_H_
++
++#include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
++
++namespace blink {
++
++class ExceptionState;
++class GPURayTracingAccelerationInstanceDescriptor;
++class GPURayTracingAccelerationContainerDescriptor;
++
++class GPURayTracingAccelerationContainer : public DawnObject<WGPURayTracingAccelerationContainer> {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  static GPURayTracingAccelerationContainer* Create(GPUDevice* device,
++                             const GPURayTracingAccelerationContainerDescriptor* webgpu_desc);
++                            
++  explicit GPURayTracingAccelerationContainer(GPUDevice* device, WGPURayTracingAccelerationContainer acceleration_container);
++  ~GPURayTracingAccelerationContainer() override;
++
++  // gpu_ray_tracing_acceleration_container.idl
++  void updateInstance(uint32_t instance_index, const GPURayTracingAccelerationInstanceDescriptor* webgpu_desc);
++  void destroy();
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingAccelerationContainer);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_H_
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.idl
+new file mode 100644
+index 000000000000..3a1fdfd4e519
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.idl
+@@ -0,0 +1,14 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingAccelerationContainer {
++    void updateInstance(
++        GPUSize32 instanceOffset,
++        GPURayTracingAccelerationInstanceDescriptor descriptor);
++    void destroy();
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_descriptor.idl
+new file mode 100644
+index 000000000000..b2c0710242c2
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_descriptor.idl
+@@ -0,0 +1,17 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationContainerDescriptor : GPUObjectDescriptorBase {
++    GPURayTracingAccelerationContainerUsageFlags usage = 0; // GPURayTracingAccelerationContainerUsageFlags.NONE
++    GPURayTracingAccelerationContainerLevel level;
++    sequence<GPURayTracingAccelerationGeometryDescriptor> geometries;
++    sequence<GPURayTracingAccelerationInstanceDescriptor> instances;
++};
++
++enum GPURayTracingAccelerationContainerLevel {
++    "bottom",
++    "top"
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.h
+new file mode 100644
+index 000000000000..67af6ad1fe07
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.h
+@@ -0,0 +1,30 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_USAGE_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_USAGE_H_
++
++#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
++
++namespace blink {
++
++class GPURayTracingAccelerationContainerUsage : public ScriptWrappable {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  // gpu_ray_tracing_acceleration_container_usage.idl
++  static constexpr uint32_t kNone = 0;
++  static constexpr uint32_t kAllowUpdate = 1;
++  static constexpr uint32_t kPreferFastTrace = 2;
++  static constexpr uint32_t kPreferFastBuild = 4;
++  static constexpr uint32_t kLowMemory = 8;
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingAccelerationContainerUsage);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_CONTAINER_USAGE_H_
++
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.idl
+new file mode 100644
+index 000000000000..64ef41b44b77
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container_usage.idl
+@@ -0,0 +1,16 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++typedef [EnforceRange] unsigned long GPURayTracingAccelerationContainerUsageFlags;
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingAccelerationContainerUsage {
++    const unsigned long NONE = 0;
++    const unsigned long ALLOW_UPDATE = 1;
++    const unsigned long PREFER_FAST_TRACE = 2;
++    const unsigned long PREFER_FAST_BUILD = 4;
++    const unsigned long LOW_MEMORY = 8;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl
+new file mode 100644
+index 000000000000..3f9ab7c75189
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl
+@@ -0,0 +1,12 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationGeometryAABBDescriptor {
++    required GPUBuffer buffer;
++    required GPUSize32 stride;
++    GPUSize32 offset = 0;
++    required GPUSize32 count;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_descriptor.idl
+new file mode 100644
+index 000000000000..d88266c37acc
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_descriptor.idl
+@@ -0,0 +1,18 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationGeometryDescriptor {
++    GPURayTracingAccelerationGeometryUsageFlags usage = 0; // GPURayTracingAccelerationGeometryUsageFlags.NONE
++    GPURayTracingAccelerationGeometryType type;
++    GPURayTracingAccelerationGeometryVertexDescriptor vertex;
++    GPURayTracingAccelerationGeometryIndexDescriptor index;
++    GPURayTracingAccelerationGeometryAABBDescriptor aabb;
++};
++
++enum GPURayTracingAccelerationGeometryType {
++    "triangles",
++    "aabbs"
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_index_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_index_descriptor.idl
+new file mode 100644
+index 000000000000..5457eb668baf
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_index_descriptor.idl
+@@ -0,0 +1,12 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationGeometryIndexDescriptor {
++    required GPUBuffer buffer;
++    required GPUIndexFormat format;
++    GPUSize32 offset = 0;
++    required GPUSize32 count;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.h
+new file mode 100644
+index 000000000000..6b0f5c7f59bc
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.h
+@@ -0,0 +1,28 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_GEOMETRY_USAGE_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_GEOMETRY_USAGE_H_
++
++#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
++
++namespace blink {
++
++class GPURayTracingAccelerationGeometryUsage : public ScriptWrappable {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  // gpu_ray_tracing_acceleration_geometry_usage.idl
++  static constexpr uint32_t kNone = 0;
++  static constexpr uint32_t kOpaque = 1;
++  static constexpr uint32_t kAllowAnyHit = 2;
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingAccelerationGeometryUsage);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_GEOMETRY_USAGE_H_
++
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.idl
+new file mode 100644
+index 000000000000..f8f0caafb3fe
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_usage.idl
+@@ -0,0 +1,14 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++typedef [EnforceRange] unsigned long GPURayTracingAccelerationGeometryUsageFlags;
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingAccelerationGeometryUsage {
++    const unsigned long NONE = 0;
++    const unsigned long OPAQUE = 1;
++    const unsigned long ALLOW_ANY_HIT = 2;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl
+new file mode 100644
+index 000000000000..630dc67b1ff4
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl
+@@ -0,0 +1,13 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationGeometryVertexDescriptor {
++    required GPUBuffer buffer;
++    required GPUVertexFormat format;
++    required GPUSize32 stride;
++    GPUSize32 offset = 0;
++    required GPUSize32 count;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_descriptor.idl
+new file mode 100644
+index 000000000000..c2763bbc5d05
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_descriptor.idl
+@@ -0,0 +1,16 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationInstanceDescriptor {
++    GPURayTracingAccelerationInstanceUsageFlags usage = 0; // GPURayTracingAccelerationInstanceUsageFlags.NONE
++    GPUSize32 mask = 0xFF;
++    GPUSize32 instanceId = 0;
++    GPUSize32 instanceOffset = 0;
++    GPURayTracingAccelerationInstanceTransformDescriptor transform;
++    Float32Array transformMatrix;
++    GPUSize32 transformMatrixSize = 12;
++    required GPURayTracingAccelerationContainer geometryContainer;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_transform_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_transform_descriptor.idl
+new file mode 100644
+index 000000000000..90cfd4266990
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_transform_descriptor.idl
+@@ -0,0 +1,11 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingAccelerationInstanceTransformDescriptor {
++    GPUTransform3DDescriptor translation;
++    GPUTransform3DDescriptor rotation;
++    GPUTransform3DDescriptor scale;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.h
+new file mode 100644
+index 000000000000..0a16e3ee3b45
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.h
+@@ -0,0 +1,30 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_INSTANCE_USAGE_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_INSTANCE_USAGE_H_
++
++#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
++
++namespace blink {
++
++class GPURayTracingAccelerationInstanceUsage : public ScriptWrappable {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  // gpu_ray_tracing_acceleration_instance_usage.idl
++  static constexpr uint32_t kNone = 0;
++  static constexpr uint32_t kTriangleCullDisable = 1;
++  static constexpr uint32_t kTriangleFrontCounterclockwise = 2;
++  static constexpr uint32_t kForceOpaque = 4;
++  static constexpr uint32_t kForceNoOpaque = 8;
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingAccelerationInstanceUsage);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_ACCELERATION_INSTANCE_USAGE_H_
++
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.idl
+new file mode 100644
+index 000000000000..6ccbde18fcb7
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_instance_usage.idl
+@@ -0,0 +1,16 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++typedef [EnforceRange] unsigned long GPURayTracingAccelerationInstanceUsageFlags;
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingAccelerationInstanceUsage {
++    const unsigned long NONE = 0;
++    const unsigned long TRIANGLE_CULL_DISABLE = 1;
++    const unsigned long TRIANGLE_FRONT_COUNTERCLOCKWISE = 2;
++    const unsigned long FORCE_OPAQUE = 4;
++    const unsigned long FORCE_NO_OPAQUE = 8;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_descriptor.idl
+new file mode 100644
+index 000000000000..e449bc46bdb0
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_descriptor.idl
+@@ -0,0 +1,8 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingPassDescriptor : GPUObjectDescriptorBase {
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.cc b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.cc
+new file mode 100644
+index 000000000000..3a53b400996e
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.cc
+@@ -0,0 +1,93 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h"
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++
++namespace blink {
++
++GPURayTracingPassEncoder::GPURayTracingPassEncoder(
++    GPUDevice* device,
++    WGPURayTracingPassEncoder ray_tracing_pass_encoder)
++    : DawnObject<WGPURayTracingPassEncoder>(device, ray_tracing_pass_encoder) {}
++
++GPURayTracingPassEncoder::~GPURayTracingPassEncoder() {
++  if (IsDawnControlClientDestroyed()) {
++    return;
++  }
++  GetProcs().rayTracingPassEncoderRelease(GetHandle());
++}
++
++void GPURayTracingPassEncoder::setBindGroup(
++    uint32_t index,
++    GPUBindGroup* bindGroup,
++    const Vector<uint32_t>& dynamicOffsets) {
++  GetProcs().rayTracingPassEncoderSetBindGroup(
++      GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
++      dynamicOffsets.data());
++}
++
++void GPURayTracingPassEncoder::setBindGroup(
++    uint32_t index,
++    GPUBindGroup* bind_group,
++    const FlexibleUint32Array& dynamic_offsets_data,
++    uint64_t dynamic_offsets_data_start,
++    uint32_t dynamic_offsets_data_length,
++    ExceptionState& exception_state) {
++  if (!ValidateSetBindGroupDynamicOffsets(
++          dynamic_offsets_data, dynamic_offsets_data_start,
++          dynamic_offsets_data_length, exception_state)) {
++    return;
++  }
++
++  const uint32_t* data =
++      dynamic_offsets_data.DataMaybeOnStack() + dynamic_offsets_data_start;
++
++  GetProcs().rayTracingPassEncoderSetBindGroup(GetHandle(), index,
++                                            bind_group->GetHandle(),
++                                            dynamic_offsets_data_length, data);
++}
++
++void GPURayTracingPassEncoder::pushDebugGroup(String groupLabel) {
++  GetProcs().rayTracingPassEncoderPushDebugGroup(GetHandle(),
++                                              groupLabel.Utf8().data());
++}
++
++void GPURayTracingPassEncoder::popDebugGroup() {
++  GetProcs().rayTracingPassEncoderPopDebugGroup(GetHandle());
++}
++
++void GPURayTracingPassEncoder::insertDebugMarker(String markerLabel) {
++  GetProcs().rayTracingPassEncoderInsertDebugMarker(GetHandle(),
++                                                 markerLabel.Utf8().data());
++}
++
++void GPURayTracingPassEncoder::setPipeline(GPURayTracingPipeline* pipeline) {
++  GetProcs().rayTracingPassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
++}
++
++void GPURayTracingPassEncoder::traceRays(uint32_t ray_generation_offset,
++                 uint32_t ray_hit_offset,
++                 uint32_t ray_miss_offset,
++                 uint32_t width,
++                 uint32_t height,
++                 uint32_t depth) {
++  GetProcs().rayTracingPassEncoderTraceRays(GetHandle(),
++                                            ray_generation_offset,
++                                            ray_hit_offset,
++                                            ray_miss_offset,
++                                            width,
++                                            height,
++                                            depth);
++}
++
++void GPURayTracingPassEncoder::endPass() {
++  GetProcs().rayTracingPassEncoderEndPass(GetHandle());
++}
++
++}  // namespace blink
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h
+new file mode 100644
+index 000000000000..0e22b16cad53
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.h
+@@ -0,0 +1,57 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PASS_ENCODER_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PASS_ENCODER_H_
++
++#include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_programmable_pass_encoder.h"
++#include "third_party/blink/renderer/platform/bindings/exception_state.h"
++
++namespace blink {
++
++class GPUBindGroup;
++class GPUBuffer;
++class GPURayTracingPipeline;
++
++class GPURayTracingPassEncoder : public DawnObject<WGPURayTracingPassEncoder>,
++                              public GPUProgrammablePassEncoder {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  explicit GPURayTracingPassEncoder(GPUDevice* device,
++                                 WGPURayTracingPassEncoder rt_pass_encoder);
++  ~GPURayTracingPassEncoder() override;
++
++  // gpu_ray_tracing_pass_encoder.idl
++  void setBindGroup(uint32_t index,
++                    GPUBindGroup* bindGroup,
++                    const Vector<uint32_t>& dynamicOffsets);
++  void setBindGroup(uint32_t index,
++                    GPUBindGroup* bind_group,
++                    const FlexibleUint32Array& dynamic_offsets_data,
++                    uint64_t dynamic_offsets_data_start,
++                    uint32_t dynamic_offsets_data_length,
++                    ExceptionState& exception_state);
++  void pushDebugGroup(String groupLabel);
++  void popDebugGroup();
++  void insertDebugMarker(String markerLabel);
++  void setPipeline(GPURayTracingPipeline* pipeline);
++
++  void traceRays(uint32_t ray_generation_offset,
++                 uint32_t ray_hit_offset,
++                 uint32_t ray_miss_offset,
++                 uint32_t width,
++                 uint32_t height,
++                 uint32_t depth);
++
++  void endPass();
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingPassEncoder);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PASS_ENCODER_H_
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.idl
+new file mode 100644
+index 000000000000..9f35b5f5d1db
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pass_encoder.idl
+@@ -0,0 +1,20 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingPassEncoder {
++    void setPipeline(GPURayTracingPipeline pipeline);
++    void traceRays(GPUSize32 ray_generation_offset,
++                  GPUSize32 ray_hit_offset,
++                  GPUSize32 ray_miss_offset,
++                  GPUSize32 width,
++                  GPUSize32 height,
++                  optional GPUSize32 depth = 1);
++
++    void endPass();
++};
++GPURayTracingPassEncoder includes GPUProgrammablePassEncoder;
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.cc b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.cc
+new file mode 100644
+index 000000000000..81e17492413f
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.cc
+@@ -0,0 +1,67 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h"
++
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_pipeline_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_state_descriptor.h"
++#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h"
++
++namespace blink {
++
++// static
++GPURayTracingPipeline* GPURayTracingPipeline::Create(
++    GPUDevice* device,
++    const GPURayTracingPipelineDescriptor* webgpu_desc) {
++  DCHECK(device);
++  DCHECK(webgpu_desc);
++
++  WGPURayTracingPipelineDescriptor dawn_desc = {};
++  if (webgpu_desc->hasLayout()) {
++    dawn_desc.layout = AsDawnType(webgpu_desc->layout());
++  }
++  if (webgpu_desc->hasLabel()) {
++    dawn_desc.label = webgpu_desc->label().Utf8().data();
++  }
++
++  WGPURayTracingStateDescriptor rt_state_desc = {};
++  rt_state_desc.shaderBindingTable = AsDawnType(webgpu_desc->rayTracingState()->shaderBindingTable());
++  if (webgpu_desc->rayTracingState()->hasMaxRecursionDepth())
++    rt_state_desc.maxRecursionDepth = webgpu_desc->rayTracingState()->maxRecursionDepth();
++  if (webgpu_desc->rayTracingState()->hasMaxPayloadSize())
++    rt_state_desc.maxPayloadSize = webgpu_desc->rayTracingState()->maxPayloadSize();
++  else
++    rt_state_desc.maxPayloadSize = 0;
++
++  dawn_desc.rayTracingState = &rt_state_desc;
++
++  return MakeGarbageCollected<GPURayTracingPipeline>(
++      device, device->GetProcs().deviceCreateRayTracingPipeline(
++                  device->GetHandle(), &dawn_desc));
++}
++
++GPURayTracingPipeline::GPURayTracingPipeline(GPUDevice* device,
++                                       WGPURayTracingPipeline rt_pipeline)
++    : DawnObject<WGPURayTracingPipeline>(device, rt_pipeline) {}
++
++GPURayTracingPipeline::~GPURayTracingPipeline() {
++  if (IsDawnControlClientDestroyed()) {
++    return;
++  }
++  GetProcs().rayTracingPipelineRelease(GetHandle());
++}
++
++GPUBindGroupLayout* GPURayTracingPipeline::getBindGroupLayout(uint32_t index) {
++  return MakeGarbageCollected<GPUBindGroupLayout>(
++      device_,
++      GetProcs().rayTracingPipelineGetBindGroupLayout(GetHandle(), index));
++}
++
++}  // namespace blink
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h
+new file mode 100644
+index 000000000000..3aeb976f3e4e
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.h
+@@ -0,0 +1,34 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PIPELINE_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PIPELINE_H_
++
++#include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
++
++namespace blink {
++
++class GPUBindGroupLayout;
++class GPURayTracingPipelineDescriptor;
++
++class GPURayTracingPipeline : public DawnObject<WGPURayTracingPipeline> {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  static GPURayTracingPipeline* Create(
++      GPUDevice* device,
++      const GPURayTracingPipelineDescriptor* webgpu_desc);
++  explicit GPURayTracingPipeline(GPUDevice* device,
++                              WGPURayTracingPipeline rt_pipeline);
++  ~GPURayTracingPipeline() override;
++
++  GPUBindGroupLayout* getBindGroupLayout(uint32_t index);
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingPipeline);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_PIPELINE_H_
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.idl
+new file mode 100644
+index 000000000000..273a62c592e9
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline.idl
+@@ -0,0 +1,11 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingPipeline {
++    GPUBindGroupLayout getBindGroupLayout(GPUIndex32 index);
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline_descriptor.idl
+new file mode 100644
+index 000000000000..b1de9b95c445
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_pipeline_descriptor.idl
+@@ -0,0 +1,9 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingPipelineDescriptor : GPUPipelineDescriptorBase {
++    required GPURayTracingStateDescriptor rayTracingState;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.cc b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.cc
+new file mode 100644
+index 000000000000..ea092e674f35
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.cc
+@@ -0,0 +1,79 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h"
++
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_shader_binding_table_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_shader_binding_table_group_descriptor.h"
++#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_ray_tracing_shader_binding_table_stage_descriptor.h"
++
++#include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
++#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
++#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
++
++namespace blink {
++
++  namespace {
++
++  }  // anonymous namespace
++
++  // static
++  GPURayTracingShaderBindingTable* GPURayTracingShaderBindingTable::Create(GPUDevice* device,
++                              const GPURayTracingShaderBindingTableDescriptor* webgpu_desc) {
++    DCHECK(device);
++    DCHECK(webgpu_desc);
++
++    WGPURayTracingShaderBindingTableDescriptor dawn_desc = {};
++
++    uint32_t stage_count = webgpu_desc->hasStages() ? static_cast<uint32_t>(webgpu_desc->stages().size()) : 0;
++    std::unique_ptr<WGPURayTracingShaderBindingTableStageDescriptor[]> stages(new WGPURayTracingShaderBindingTableStageDescriptor[stage_count]());
++    for (wtf_size_t i = 0; i < stage_count; ++i) {
++      const GPURayTracingShaderBindingTableStageDescriptor* stage_desc = webgpu_desc->stages()[i].Get();
++
++      WGPURayTracingShaderBindingTableStageDescriptor entry_desc = {};
++      entry_desc.stage = static_cast<WGPURayTracingAccelerationInstanceUsageFlags>(stage_desc->stage());
++      entry_desc.module = AsDawnType(stage_desc->module());
++
++      stages[i] = entry_desc;
++    }
++    dawn_desc.stageCount = stage_count;
++    dawn_desc.stages = stage_count > 0 ? stages.get() : nullptr;
++
++    uint32_t group_count = webgpu_desc->hasGroups() ? static_cast<uint32_t>(webgpu_desc->groups().size()) : 0;
++    std::unique_ptr<WGPURayTracingShaderBindingTableGroupDescriptor[]> groups(new WGPURayTracingShaderBindingTableGroupDescriptor[group_count]());
++    for (wtf_size_t i = 0; i < group_count; ++i) {
++      const GPURayTracingShaderBindingTableGroupDescriptor* groups_desc = webgpu_desc->groups()[i].Get();
++
++      WGPURayTracingShaderBindingTableGroupDescriptor entry_desc = {};
++      if (groups_desc->hasType()) entry_desc.type = AsDawnEnum<WGPURayTracingShaderBindingTableGroupType>(groups_desc->type());
++      if (groups_desc->hasGeneralIndex()) entry_desc.generalIndex = groups_desc->generalIndex();
++      if (groups_desc->hasClosestHitIndex()) entry_desc.closestHitIndex = groups_desc->closestHitIndex();
++      if (groups_desc->hasAnyHitIndex()) entry_desc.anyHitIndex = groups_desc->anyHitIndex();
++      if (groups_desc->hasIntersectionIndex()) entry_desc.intersectionIndex = groups_desc->intersectionIndex();
++
++      groups[i] = entry_desc;
++    }
++    dawn_desc.groupCount = group_count;
++    dawn_desc.groups = group_count > 0 ? groups.get() : nullptr;
++
++    return MakeGarbageCollected<GPURayTracingShaderBindingTable>(
++        device,
++        device->GetProcs().deviceCreateRayTracingShaderBindingTable(device->GetHandle(), &dawn_desc));
++  }
++
++  GPURayTracingShaderBindingTable::GPURayTracingShaderBindingTable(GPUDevice* device, WGPURayTracingShaderBindingTable sbt)
++      : DawnObject<WGPURayTracingShaderBindingTable>(device, sbt) {}
++
++  GPURayTracingShaderBindingTable::~GPURayTracingShaderBindingTable() {
++    if (IsDawnControlClientDestroyed()) {
++      return;
++    }
++    GetProcs().rayTracingShaderBindingTableRelease(GetHandle());
++  }
++
++  void GPURayTracingShaderBindingTable::destroy() {
++    GetProcs().rayTracingShaderBindingTableDestroy(GetHandle());
++  }
++
++}  // namespace blink
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h
+new file mode 100644
+index 000000000000..488d746cbc5f
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.h
+@@ -0,0 +1,34 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_SHADER_BINDING_TABLE_H_
++#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_SHADER_BINDING_TABLE_H_
++
++#include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
++
++namespace blink {
++
++class ExceptionState;
++class GPURayTracingShaderBindingTableDescriptor;
++
++class GPURayTracingShaderBindingTable : public DawnObject<WGPURayTracingShaderBindingTable> {
++  DEFINE_WRAPPERTYPEINFO();
++
++ public:
++  static GPURayTracingShaderBindingTable* Create(GPUDevice* device,
++                             const GPURayTracingShaderBindingTableDescriptor* webgpu_desc);
++                            
++  explicit GPURayTracingShaderBindingTable(GPUDevice* device, WGPURayTracingShaderBindingTable sbt);
++  ~GPURayTracingShaderBindingTable() override;
++
++  // gpu_ray_tracing_shader_binding_table.idl
++  void destroy();
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(GPURayTracingShaderBindingTable);
++};
++
++}  // namespace blink
++
++#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RAY_TRACING_SHADER_BINDING_TABLE_H_
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.idl
+new file mode 100644
+index 000000000000..f310c59daa93
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table.idl
+@@ -0,0 +1,11 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++[
++    Exposed(Window WebGPU, Worker WebGPU)
++] interface GPURayTracingShaderBindingTable {
++    void destroy();
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_descriptor.idl
+new file mode 100644
+index 000000000000..9e3f62d3326a
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_descriptor.idl
+@@ -0,0 +1,10 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingShaderBindingTableDescriptor {
++    required sequence<GPURayTracingShaderBindingTableStageDescriptor> stages;
++    required sequence<GPURayTracingShaderBindingTableGroupDescriptor> groups;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_group_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_group_descriptor.idl
+new file mode 100644
+index 000000000000..e5f226a1e327
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_group_descriptor.idl
+@@ -0,0 +1,19 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingShaderBindingTableGroupDescriptor {
++    GPURayTracingShaderBindingTableGroupType type = "general";
++    long generalIndex = -1;
++    long closestHitIndex = -1;
++    long anyHitIndex = -1;
++    long intersectionIndex = -1;
++};
++
++enum GPURayTracingShaderBindingTableGroupType {
++    "general",
++    "triangles-hit-group",
++    "procedural-hit-group"
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_stage_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_stage_descriptor.idl
+new file mode 100644
+index 000000000000..c3a0508a6ef5
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_shader_binding_table_stage_descriptor.idl
+@@ -0,0 +1,10 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingShaderBindingTableStageDescriptor {
++    required GPUShaderStageFlags stage;
++    required GPUShaderModule module;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_state_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_state_descriptor.idl
+new file mode 100644
+index 000000000000..1934e6fbd871
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_state_descriptor.idl
+@@ -0,0 +1,11 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPURayTracingStateDescriptor {
++    required GPURayTracingShaderBindingTable shaderBindingTable;
++    GPUSize32 maxRecursionDepth = 1;
++    GPUSize32 maxPayloadSize;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.h b/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.h
+index 07b664900f55..cdfb0c07b287 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.h
++++ b/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.h
+@@ -17,6 +17,11 @@ class GPUShaderStage : public ScriptWrappable {
+   static constexpr uint32_t kVertex = 1;
+   static constexpr uint32_t kFragment = 2;
+   static constexpr uint32_t kCompute = 4;
++  static constexpr uint32_t kRayGeneration = 8;
++  static constexpr uint32_t kRayAnyHit = 16;
++  static constexpr uint32_t kRayClosestHit = 32;
++  static constexpr uint32_t kRayMiss = 64;
++  static constexpr uint32_t kRayIntersection = 128;
+ 
+  private:
+   DISALLOW_COPY_AND_ASSIGN(GPUShaderStage);
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.idl b/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.idl
+index b250a67d525b..cd2d18157f19 100644
+--- a/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.idl
++++ b/third_party/blink/renderer/modules/webgpu/gpu_shader_stage.idl
+@@ -11,4 +11,9 @@ typedef [EnforceRange] unsigned long GPUShaderStageFlags;
+     const unsigned long VERTEX = 1;
+     const unsigned long FRAGMENT = 2;
+     const unsigned long COMPUTE = 4;
++    const unsigned long RAY_GENERATION = 8;
++    const unsigned long RAY_ANY_HIT = 16;
++    const unsigned long RAY_CLOSEST_HIT = 32;
++    const unsigned long RAY_MISS = 64;
++    const unsigned long RAY_INTERSECTION = 128;
+ };
+diff --git a/third_party/blink/renderer/modules/webgpu/gpu_transform_3d_descriptor.idl b/third_party/blink/renderer/modules/webgpu/gpu_transform_3d_descriptor.idl
+new file mode 100644
+index 000000000000..8a9ce2e9a185
+--- /dev/null
++++ b/third_party/blink/renderer/modules/webgpu/gpu_transform_3d_descriptor.idl
+@@ -0,0 +1,11 @@
++// Copyright 2020 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// https://gpuweb.github.io/gpuweb/
++
++dictionary GPUTransform3DDescriptor {
++    double x = 0;
++    double y = 0;
++    double z = 0;
++};
+diff --git a/third_party/blink/renderer/modules/webgpu/idls.gni b/third_party/blink/renderer/modules/webgpu/idls.gni
+index 04e12c9fc189..494b81db3401 100644
+--- a/third_party/blink/renderer/modules/webgpu/idls.gni
++++ b/third_party/blink/renderer/modules/webgpu/idls.gni
+@@ -21,6 +21,13 @@ modules_idl_files = [
+   "gpu_out_of_memory_error.idl",
+   "gpu_pipeline_layout.idl",
+   "gpu_queue.idl",
++  "gpu_ray_tracing_acceleration_container.idl",
++  "gpu_ray_tracing_acceleration_container_usage.idl",
++  "gpu_ray_tracing_acceleration_geometry_usage.idl",
++  "gpu_ray_tracing_acceleration_instance_usage.idl",
++  "gpu_ray_tracing_pass_encoder.idl",
++  "gpu_ray_tracing_pipeline.idl",
++  "gpu_ray_tracing_shader_binding_table.idl",
+   "gpu_render_bundle.idl",
+   "gpu_render_bundle_encoder.idl",
+   "gpu_render_pass_encoder.idl",
+@@ -64,6 +71,19 @@ modules_dictionary_idl_files = [
+   "gpu_pipeline_layout_descriptor.idl",
+   "gpu_programmable_stage_descriptor.idl",
+   "gpu_rasterization_state_descriptor.idl",
++  "gpu_ray_tracing_acceleration_container_descriptor.idl",
++  "gpu_ray_tracing_acceleration_geometry_aabb_descriptor.idl",
++  "gpu_ray_tracing_acceleration_geometry_descriptor.idl",
++  "gpu_ray_tracing_acceleration_geometry_index_descriptor.idl",
++  "gpu_ray_tracing_acceleration_geometry_vertex_descriptor.idl",
++  "gpu_ray_tracing_acceleration_instance_descriptor.idl",
++  "gpu_ray_tracing_acceleration_instance_transform_descriptor.idl",
++  "gpu_ray_tracing_pipeline_descriptor.idl",
++  "gpu_ray_tracing_pass_descriptor.idl",
++  "gpu_ray_tracing_shader_binding_table_descriptor.idl",
++  "gpu_ray_tracing_shader_binding_table_group_descriptor.idl",
++  "gpu_ray_tracing_shader_binding_table_stage_descriptor.idl",
++  "gpu_ray_tracing_state_descriptor.idl",
+   "gpu_render_bundle_descriptor.idl",
+   "gpu_render_bundle_encoder_descriptor.idl",
+   "gpu_render_pass_color_attachment_descriptor.idl",
+@@ -78,6 +98,7 @@ modules_dictionary_idl_files = [
+   "gpu_texture_copy_view.idl",
+   "gpu_texture_descriptor.idl",
+   "gpu_texture_view_descriptor.idl",
++  "gpu_transform_3d_descriptor.idl",
+   "gpu_uncaptured_error_event_init.idl",
+   "gpu_vertex_attribute_descriptor.idl",
+   "gpu_vertex_buffer_layout_descriptor.idl",
+-- 
+2.24.1.windows.2
+
