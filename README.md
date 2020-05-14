@@ -2,6 +2,7 @@
 
 This patch adds hardware accelerated Ray tracing to WebGPU in Chromium. Both Windows and Linux are supported.
 
+// TODO: add binaries
 
 ## Useful links:
  - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
