@@ -10,6 +10,8 @@ When using the Chromium RT build, you can browse [this](https://maierfelix.githu
  - [Windows](https://github.com/maierfelix/chromium-ray-tracing/releases/download/0.0.1/Chromium-RT-win64.zip)
  - [Linux](#) (*in progress*)
 
+Notice: On Windows, make sure you run Chromium with `chrome.exe --no-sandbox`. If the sandbox is not disabled, Chromium cannot load DXC (*TODO: fix this*).
+
 ## Useful links:
  - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
  - [Dawn RT](https://github.com/maierfelix/dawn-ray-tracing) (Fork of Chromium's WebGPU implementation)
@@ -29,9 +31,5 @@ autoninja -C out/Default
 ### On Windows:
 After building, download [DXC](https://github.com/microsoft/DirectXShaderCompiler/releases) and place *dxcompiler.dll* and *dxil.dll* along *chrome.exe*.<br/>
 
-Make sure you run Chromium with `chrome.exe --no-sandbox`. If the sandbox is not enabled, Chromium cannot load DXC.
-
 ### On Linux:
 Make sure you have the latest [Vulkan beta driver](https://developer.nvidia.com/vulkan-driver) installed.
-
-Now you can run Chromium.
