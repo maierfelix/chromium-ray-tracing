@@ -2,7 +2,13 @@
 
 This patch adds hardware accelerated Ray tracing to WebGPU in Chromium. Both Windows and Linux are supported.
 
-// TODO: add binaries
+## Demo
+
+When using the Chromium RT build, you can browse [this](https://maierfelix.github.io/chromium-ray-tracing-demo/) online demo.
+
+## Binaries
+ - [Windows](https://drive.google.com/open?id=1HQtEBMvlSei6Do9aGl-oQlOe6P_eCc_S)
+ - [Linux](#) (*in progress*)
 
 ## Useful links:
  - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
@@ -14,6 +20,7 @@ Clone Chromium (revision: *b4332347b130a3c912aa0eba1583cb7db071b1e6*).<br/>
 
 Run:
 ````
+fetch chromium
 gclient sync
 gn gen out/Default --args="is_component_build=false is_debug=false use_dawn=true"
 autoninja -C out/Default
