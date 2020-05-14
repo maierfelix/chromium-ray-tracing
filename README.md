@@ -12,7 +12,7 @@ When using the Chromium RT build, you can browse [this](https://maierfelix.githu
 
 ## Useful links:
  - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
- - [Dawn RT](https://github.com/maierfelix/dawn-ray-tracing) (Chromium's WebGPU implementation)
+ - [Dawn RT](https://github.com/maierfelix/dawn-ray-tracing) (Fork of Chromium's WebGPU implementation)
 
 ## Building
 
