@@ -28,8 +28,8 @@ Run:
 ````
 fetch chromium
 gclient sync
-gn gen out/Default --args="is_component_build=false is_debug=false use_dawn=true"
-autoninja -C out/Default
+gn gen out/Default --args="is_component_build=true is_debug=false use_dawn=true symbol_level=1 blink_symbol_level=1"
+autoninja -C out/Default chrome
 ````
 
 ### On Windows:
