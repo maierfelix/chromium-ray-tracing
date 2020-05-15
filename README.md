@@ -1,6 +1,6 @@
 # chromium-ray-tracing
 
-This patch adds hardware accelerated Ray tracing to WebGPU in Chromium. Both Windows and Linux are supported.
+This patch adds hardware accelerated Ray tracing to WebGPU in Chromium using [Dawn RT](https://github.com/maierfelix/dawn-ray-tracing), which is a Fork of Chromium's WebGPU implementation. Both Windows and Linux are supported.
 
 ## Preview
 
@@ -15,10 +15,6 @@ When using the Chromium RT build, you can browse [this](https://maierfelix.githu
  - [Linux](#) (*in progress*)
 
 Notice: On Windows, make sure you run Chromium with `chrome.exe --disable-gpu-sandbox`. If the sandbox is not disabled, Chromium cannot load DXC (*TODO: fix this*).
-
-## Useful links:
- - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
- - [Dawn RT](https://github.com/maierfelix/dawn-ray-tracing) (Fork of Chromium's WebGPU implementation)
 
 ## Building
 
