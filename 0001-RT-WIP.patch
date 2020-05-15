@@ -1,4 +1,4 @@
-From 53ea99ec7847a2626737dfbc5c90f57a7c326d83 Mon Sep 17 00:00:00 2001
+From 622b83474902dbba3b36e460da0d600a511b8ad8 Mon Sep 17 00:00:00 2001
 From: Felix Maier <xilefmai@gmail.com>
 Date: Mon, 11 May 2020 12:33:24 +0200
 Subject: [PATCH] RT WIP
@@ -32,6 +32,8 @@ Roll dawn
 RT spec changes
 
 Roll dawn
+
+Load DXC/DXIL
 ---
  DEPS                                          |  10 +-
  devenv                                        |   0
@@ -93,7 +95,8 @@ Roll dawn
  .../modules/webgpu/gpu_shader_stage.idl       |   5 +
  .../webgpu/gpu_transform_3d_descriptor.idl    |  11 +
  .../blink/renderer/modules/webgpu/idls.gni    |  21 ++
- 60 files changed, 1275 insertions(+), 8 deletions(-)
+ ui/gl/init/gl_initializer_win.cc              |  10 +-
+ 61 files changed, 1283 insertions(+), 10 deletions(-)
  create mode 100644 devenv
  create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.cc
  create mode 100644 third_party/blink/renderer/modules/webgpu/gpu_ray_tracing_acceleration_container.h
@@ -2084,6 +2087,35 @@ index 04e12c9fc189..494b81db3401 100644
    "gpu_uncaptured_error_event_init.idl",
    "gpu_vertex_attribute_descriptor.idl",
    "gpu_vertex_buffer_layout_descriptor.idl",
+diff --git a/ui/gl/init/gl_initializer_win.cc b/ui/gl/init/gl_initializer_win.cc
+index c62800c9973c..13eb7221264d 100644
+--- a/ui/gl/init/gl_initializer_win.cc
++++ b/ui/gl/init/gl_initializer_win.cc
+@@ -32,8 +32,10 @@ namespace init {
+ namespace {
+ 
+ const wchar_t kD3DCompiler[] = L"D3DCompiler_47.dll";
++const wchar_t kDXCompiler[] = L"dxcompiler.dll";
++const wchar_t kDXIL[] = L"dxil.dll";
+ 
+-bool LoadD3DXLibrary(const base::FilePath& module_path,
++bool LoadNativeLibrary(const base::FilePath& module_path,
+                      const base::FilePath::StringType& name) {
+   base::NativeLibrary library =
+       base::LoadNativeLibrary(base::FilePath(name), nullptr);
+@@ -56,7 +58,11 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
+   // and if that fails, using an absolute path. This is to ensure these DLLs
+   // are loaded before ANGLE is loaded in case they are not in the default
+   // search path.
+-  LoadD3DXLibrary(module_path, kD3DCompiler);
++  LoadNativeLibrary(module_path, kD3DCompiler);
++
++  // Load DXC/DXIL
++  LoadNativeLibrary(module_path, kDXCompiler);
++  LoadNativeLibrary(module_path, kDXIL);
+ 
+   base::FilePath gles_path;
+   if (implementation == kGLImplementationSwiftShaderGL) {
 -- 
 2.24.1.windows.2
 
