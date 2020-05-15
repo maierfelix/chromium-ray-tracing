@@ -2,6 +2,10 @@
 
 This patch adds hardware accelerated Ray tracing to WebGPU in Chromium. Both Windows and Linux are supported.
 
+## Preview
+
+<a href="https://www.youtube.com/watch?v=4ZC0iDxlDV8"><img src="https://i.imgur.com/nyagWiM.png" width="420"/></a>
+
 ## Demo
 
 When using the Chromium RT build, you can browse [this](https://maierfelix.github.io/chromium-ray-tracing-demo/) online demo, which is an interactive path tracer.
