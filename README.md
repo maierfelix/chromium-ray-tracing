@@ -10,7 +10,7 @@ When using the Chromium RT build, you can browse [this](https://maierfelix.githu
  - [Windows](https://github.com/maierfelix/chromium-ray-tracing/releases/download/0.0.1/Chromium-RT-win64.zip)
  - [Linux](#) (*in progress*)
 
-Notice: On Windows, make sure you run Chromium with `chrome.exe --no-sandbox`. If the sandbox is not disabled, Chromium cannot load DXC (*TODO: fix this*).
+Notice: On Windows, make sure you run Chromium with `chrome.exe --disable-gpu-sandbox`. If the sandbox is not disabled, Chromium cannot load DXC (*TODO: fix this*).
 
 ## Useful links:
  - [RT specification](https://github.com/maierfelix/dawn-ray-tracing/blob/master/RT_SPEC.md)
