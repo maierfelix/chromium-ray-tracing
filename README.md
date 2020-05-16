@@ -14,6 +14,9 @@ When using the Chromium RT build, you can browse [this](https://maierfelix.githu
  - [Windows](https://github.com/maierfelix/chromium-ray-tracing/releases/download/0.0.1/Chromium-RT-win64.zip)
  - [Linux](#) (*in progress*)
 
+To enable WebGPU, go to `chrome://flags/` and set `Unsafe WebGPU` to *enabled*.<br/>
+On Windows, if you get warnings that DXC/DXIL isn't available, run chromium with `--disable-gpu-sandbox`.
+
 ## Building
 
 Clone Chromium (revision: *b4332347b130a3c912aa0eba1583cb7db071b1e6*).<br/>
